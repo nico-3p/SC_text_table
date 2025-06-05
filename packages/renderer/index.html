@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net; img-src 'self' blob: data:" />
+        <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+        <title></title>
+
+        <script src="https://cdn.jsdelivr.net/npm/gridjs@6.0.6/dist/gridjs.production.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/gridjs@6.0.6/dist/theme/mermaid.min.css" rel="stylesheet" />
+
+        <link rel="stylesheet" href="css/style.css" />
+    </head>
+    <body>
+        <div>
+            <input type="text" id="input_filter" value="^json" />
+            <input type="number" id="input_getcount" value="5" min="0" step="1" />
+            <label for="input_downloadAssetMap" class="checkbox-label"> <input type="checkbox" id="input_downloadAssetMap" checked />DL AssetMap </label>
+            <input type="button" id="input_getbutton" value="GetAssets" />
+            <input type="button" id="input_createJSON" value="CreateJSON" />
+            <input type="button" id="input_loadJSON" value="LoadJSON" />
+        </div>
+
+        <hr />
+
+        <div class="search-input-container">
+            <div>
+                <label for="input_id">id:</label>
+                <input type="text" class="input-search" name="input_id" id="input_id" data-key="id" />
+            </div>
+            <div>
+                <label for="input_speaker">speaker:</label>
+                <input type="text" class="input-search" name="input_speaker" id="input_speaker" data-key="speaker" />
+            </div>
+            <div>
+                <label for="input_text">text:</label>
+                <input type="text" class="input-search" name="input_text" id="input_text" data-key="text" />
+            </div>
+            <div>
+                <label for="input_audio">audio:</label>
+                <input type="text" class="input-search" name="input_audio" id="input_audio" data-key="audio" />
+            </div>
+            <div>
+                <label for="input_json">json:</label>
+                <input type="text" class="input-search" name="input_json" id="input_json" data-key="json" />
+            </div>
+        </div>
+
+        <hr />
+
+        <div id="tableContainer"></div>
+
+        <script src="./js/renderer.js"></script>
+    </body>
+</html>

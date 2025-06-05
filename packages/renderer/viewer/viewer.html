@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Viewer</title>
+        <script src="https://pixijs.download/v7.2.4/pixi.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@pixi/sound@5.2.0/dist/pixi-sound.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/pixi-spine@4.0.4/dist/pixi-spine.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.2/gsap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.2/PixiPlugin.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/scdb-eventviewer/dist/scdb-eventviewer.min.js"></script>
+        <link rel="stylesheet" href="viewer.css" />
+    </head>
+    <body>
+        <div class="viewer-container">
+            <canvas id="viewer_canvas" width="1136" height="640"></canvas>
+        </div>
+        <div class="viewer-controls">
+            <input type="range" id="seek_bar" value="0" max="0" min="0" />
+        </div>
+
+        <script src="viewer.js"></script>
+    </body>
+</html>

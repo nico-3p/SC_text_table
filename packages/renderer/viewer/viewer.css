@@ -1,0 +1,15 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.viewer-controls {
+    width: 1136px;
+    padding: 12px;
+    box-sizing: border-box;
+}
+.viewer-controls #seek_bar {
+    width: 100%;
+    margin: 0;
+}
