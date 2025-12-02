@@ -184,8 +184,7 @@ const createTable = () => {
                             },
                             onClick: () => {
                                 console.log(cell);
-
-                                window.open(`viewer/viewer.html?path=${cell}`, '_blank', 'width=1152,height=760');
+                                window.electronAPI.openViewer(cell);
                             },
                         },
                         cell

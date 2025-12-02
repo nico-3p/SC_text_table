@@ -3,7 +3,9 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
 module.exports = {
     packagerConfig: {
-        asar: true,
+        asar: {
+            unpack: '**name_list.json**', // 全て展開
+        },
     },
     rebuildConfig: {},
     makers: [

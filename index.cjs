@@ -1,15 +1,19 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
 const fs = require('fs-extra');
 const glob = require('glob');
 const { mkdirp } = require('mkdirp');
 const Axios = require('axios');
+const express = require('express');
 const { createHash } = require('crypto');
 const { createGunzip } = require('zlib');
 const concatStream = require('concat-stream');
 const ffmpeg = require('fluent-ffmpeg');
 
 let win;
+let server, port;
+
+const isDev = !app.isPackaged;
 
 const createWindow = () => {
     win = new BrowserWindow({
@@ -34,6 +38,10 @@ const createWindow = () => {
     ipcMain.on('downloadAudio', async (event, src, name) => {
         downloadAudio(src, name);
     });
+
+    ipcMain.on('openViewer', async (event, cell) => {
+        openViewer(cell);
+    });
 };
 
 app.whenReady().then(() => {
@@ -46,11 +54,32 @@ app.whenReady().then(() => {
             createWindow();
         }
     });
+
+    // Express サーバー起動
+    const expressApp = express();
+
+    // assets フォルダのパスを開発/配布で切り替え
+    const assetsPath = app.isPackaged
+        ? path.join(path.dirname(process.execPath), 'assets') // 配布後
+        : path.join(__dirname, 'assets'); // 開発中
+
+    // 静的ファイルを配信
+    expressApp.use('/assets', express.static(assetsPath));
+    expressApp.use('/viewer', express.static(path.join(__dirname, 'viewer')));
+
+    server = expressApp.listen(0, () => {
+        port = server.address().port;
+        console.log(`Server running at http://localhost:${port}`);
+    });
 });
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
+    }
+
+    if (server) {
+        server.close();
     }
 });
 
@@ -327,4 +356,14 @@ const downloadAudio = async (src, name) => {
     await encodeWav(localPath, encodePath);
 
     fs.unlinkSync(localPath);
+};
+
+// ----
+const openViewer = (cell) => {
+    const eventId = cell.split('\\').pop().split('.')[0];
+    const eventType = cell.split('\\')[2];
+    const allView = false;
+
+    const url = `http://localhost:${port}/viewer/index.html?eventId=${eventId}&eventType=${eventType}&allView=${allView}`;
+    shell.openExternal(url);
 };

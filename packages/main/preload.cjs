@@ -7,5 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     downloadAudio: (src, name) => ipcRenderer.send('downloadAudio', src, name),
 
+    openViewer: (cell) => ipcRenderer.send('openViewer', cell),
+
     onGetLog: (callback) => ipcRenderer.on('sendLog', callback),
 });

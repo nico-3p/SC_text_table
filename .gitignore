@@ -2,6 +2,7 @@ assets
 !packages/renderer/viewer/assets
 voice/
 packages/main/test.cjs
+packages/renderer/viewer - コピー
 
 # Logs
 logs
