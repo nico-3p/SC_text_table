@@ -11,7 +11,6 @@ class EventController {
         this.isMute = true;
         this.audioController = audioCtrl; // 外部から注入
         this.container = document.querySelector('.message-container');
-        this.clickHandler = null;
         this.scrollHandler = null;
         this.mouseMoveHandler = null;
         this.mouseLeaveHandler = null;
@@ -180,35 +179,54 @@ class EventController {
 
     async viewOneByOne() {
         this.isMute = false;
-
         this.nowPageIndex = 0;
-        this.clickHandler = async (e) => {
-            if (this.nowPageIndex >= this.eventData.length - 1) return;
 
+        // this バインド済みのハンドラを保持
+        this.boundAdvanceHandler = this.advanceMessage.bind(this);
+        this.boundKeyHandler = this.keyDownHandler.bind(this);
+
+        document.addEventListener('click', this.boundAdvanceHandler);
+        document.addEventListener('keydown', this.boundKeyHandler);
+    }
+
+    async advanceMessage(e) {
+        if (this.nowPageIndex >= this.eventData.length - 1) return;
+
+        // クリックイベントの場合の追加判定
+        if (e?.type === 'click') {
             // 音声再生ボタン押下時は無視
-            if (e.target.classList.contains('button-element')) return;
+            if (e.target?.classList?.contains('button-element')) return;
+        }
 
-            // 選択待機状態の場合は無視
-            if (this.selectInstance && this.selectInstance.isActive()) return;
+        // 選択待機状態の場合は無視
+        if (this.selectInstance && this.selectInstance.isActive()) return;
 
-            const bottom = this.container.scrollHeight - this.container.clientHeight;
-            this.container.scroll(0, bottom);
+        const bottom = this.container.scrollHeight - this.container.clientHeight;
+        this.container.scroll(0, bottom);
 
-            const messageUl = document.querySelector('.message-ul');
-            this.nowPageIndex = await this.turnPage(this.nowPageIndex);
+        const messageUl = document.querySelector('.message-ul');
+        this.nowPageIndex = await this.turnPage(this.nowPageIndex);
 
-            const liHeight = [...messageUl.childNodes].pop().clientHeight;
-            messageUl.style.setProperty('transition', '');
-            messageUl.style.setProperty('transform', `translateY(${liHeight}px)`);
+        const liHeight = [...messageUl.childNodes].pop().clientHeight;
+        messageUl.style.setProperty('transition', '');
+        messageUl.style.setProperty('transform', `translateY(${liHeight}px)`);
 
-            await sleep(1);
-            messageUl.style.setProperty('transition', 'transform 200ms ease-out');
-            messageUl.style.setProperty('transform', 'translateY(0)');
+        await sleep(1);
+        messageUl.style.setProperty('transition', 'transform 200ms ease-out');
+        messageUl.style.setProperty('transform', 'translateY(0)');
 
-            this.nowPageIndex++;
-        };
+        this.nowPageIndex++;
+    }
 
-        document.addEventListener('click', this.clickHandler);
+    keyDownHandler(e) {
+        // スペースキーのみ対象
+        if (e.code !== 'Space') return;
+
+        const tag = e.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+        e.preventDefault();
+        this.advanceMessage(e);
     }
 
     async changeBG(id) {
@@ -340,19 +358,29 @@ class EventController {
     }
 
     destroy() {
-        if (this.clickHandler) {
-            document.removeEventListener('click', this.clickHandler);
-            this.clickHandler = null;
+        // クリック／キー入力の解除
+        if (this.boundAdvanceHandler) {
+            document.removeEventListener('click', this.boundAdvanceHandler);
+            this.boundAdvanceHandler = null;
         }
-        if (this.scrollHandler) {
+
+        if (this.boundKeyHandler) {
+            document.removeEventListener('keydown', this.boundKeyHandler);
+            this.boundKeyHandler = null;
+        }
+
+        // スクロール関連
+        if (this.scrollHandler && this.container) {
             this.container.removeEventListener('scroll', this.scrollHandler);
             this.scrollHandler = null;
         }
-        if (this.mouseMoveHandler) {
+
+        if (this.mouseMoveHandler && this.container) {
             this.container.removeEventListener('mousemove', this.mouseMoveHandler);
             this.mouseMoveHandler = null;
         }
-        if (this.mouseLeaveHandler) {
+
+        if (this.mouseLeaveHandler && this.container) {
             this.container.removeEventListener('mouseleave', this.mouseLeaveHandler);
             this.mouseLeaveHandler = null;
         }
@@ -366,6 +394,7 @@ class EventController {
             this.bgLayers = null;
         }
 
+        // 内部状態の破棄
         this.eventData = null;
         this.container = null;
         this.nowBackground = null;
