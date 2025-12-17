@@ -107,7 +107,7 @@ class EventController {
         if ('bgm' in e) this.changeBGM(e.bgm);
         if ('se' in e && !('waitTime' in e)) this.changeSE(e.se);
         if ('textFrame' in e && e.textFrame !== 'off') new Message(this, e, this.audioController, this.isMute, this.nowBackground);
-        if ('textCtrl' in e && e.textCtrl === 'l') this.selectInstance = new Select(this, this.eventData, i);
+        if ('textCtrl' in e && e.textCtrl === 'l') this.selectInstance = new Select(this, this.eventData, i, this.allView);
 
         if ('nextLabel' in e && !('select' in e)) {
             // nextLabel が存在し、select が存在しない場合は nextLabel へジャンプ
@@ -163,17 +163,6 @@ class EventController {
                 div.classList.add('unselected');
                 div.classList.remove('selected');
             }
-
-            // クリックイベントを追加
-            div.addEventListener('click', async () => {
-                if (div.classList.contains('selected')) return;
-
-                const nextIndex = this.selectInstance.getNextIndex();
-
-                for (let i = nextIndex; i < this.eventData.length; i++) {
-                    i = await this.turnPage(i);
-                }
-            });
         });
     }
 
@@ -562,10 +551,11 @@ class Message {
 }
 
 class Select {
-    constructor(eventController, eventData, index) {
+    constructor(eventController, eventData, index, allView = false) {
         this.eventController = eventController;
         this.eventData = eventData;
         this.index = index;
+        this.allView = allView;
 
         this.parentElement = document.querySelector('.message-ul');
 
@@ -618,13 +608,12 @@ class Select {
         this.parentElement.appendChild(this.element);
     }
 
-    onClickSelect(idx) {
+    async onClickSelect(idx) {
         if (this.selectedIndex === idx) return;
 
         this.selectedIndex = idx;
 
-        const selectContents = this.element.querySelectorAll('.select-content');
-        selectContents.forEach((div, index) => {
+        this.selectElements.forEach((div, index) => {
             if (index === idx) {
                 div.classList.add('selected');
                 div.classList.remove('unselected');
@@ -639,6 +628,15 @@ class Select {
 
         // 次のターンへ進む
         this.eventController.nowPageIndex = this.getNextIndex();
+
+        // allViewモードの場合は最後まで進む
+        if (this.allView) {
+            const nextIndex = this.getNextIndex();
+
+            for (let i = nextIndex; i < this.eventData.length; i++) {
+                i = await this.eventController.turnPage(i);
+            }
+        }
     }
 
     // 次のターンで選択肢の分岐先へジャンプ
