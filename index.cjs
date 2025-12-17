@@ -9,6 +9,15 @@ const { createHash } = require('crypto');
 const { createGunzip } = require('zlib');
 const concatStream = require('concat-stream');
 const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('ffmpeg-static');
+ffmpeg.setFfmpegPath(ffmpegPath);
+
+if (app.isPackaged) {
+    const unpackedPath = ffmpegPath.replace('app.asar', 'app.asar.unpacked');
+    ffmpeg.setFfmpegPath(unpackedPath);
+} else {
+    ffmpeg.setFfmpegPath(ffmpegPath);
+}
 
 let win;
 let server, port;
