@@ -12,6 +12,7 @@ const ffmpeg = require('fluent-ffmpeg');
 
 let win;
 let server, port;
+const DEFAULT_PORT = 58283;
 
 const isDev = !app.isPackaged;
 
@@ -44,7 +45,7 @@ const createWindow = () => {
     });
 };
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
     ipcMain.handle('loadJSON', loadJSON);
 
     createWindow();
@@ -67,10 +68,7 @@ app.whenReady().then(() => {
     expressApp.use('/assets', express.static(assetsPath));
     expressApp.use('/viewer', express.static(path.join(__dirname, 'viewer')));
 
-    server = expressApp.listen(0, () => {
-        port = server.address().port;
-        console.log(`Server running at http://localhost:${port}`);
-    });
+    server = await startServer(expressApp);
 });
 
 app.on('window-all-closed', () => {
@@ -366,4 +364,39 @@ const openViewer = (cell) => {
 
     const url = `http://localhost:${port}/viewer/index.html?eventId=${eventId}&eventType=${eventType}&allView=${allView}`;
     shell.openExternal(url);
+};
+
+const startServer = (expressApp) => {
+    return new Promise((resolve, reject) => {
+        // まずは固定ポートで起動を試みる
+        const tryFixedPort = () => {
+            const s = expressApp.listen(DEFAULT_PORT, () => {
+                port = DEFAULT_PORT;
+                console.log(`Server running at http://localhost:${port}`);
+                resolve(s);
+            });
+
+            s.on('error', (err) => {
+                if (err.code === 'EADDRINUSE') {
+                    console.warn(`Port ${DEFAULT_PORT} is already in use. Falling back to random port.`);
+                    tryRandomPort();
+                } else {
+                    reject(err);
+                }
+            });
+        };
+
+        // フォールバック：ランダムポート
+        const tryRandomPort = () => {
+            const s = expressApp.listen(0, () => {
+                port = s.address().port;
+                console.log(`Server running at http://localhost:${port}`);
+                resolve(s);
+            });
+
+            s.on('error', reject);
+        };
+
+        tryFixedPort();
+    });
 };
