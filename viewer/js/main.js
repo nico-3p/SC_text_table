@@ -267,7 +267,8 @@ class EventController {
         if (this.isMute) return;
 
         if (id === 'fade_out') {
-            this.audioController.fadeOutBGM();
+            // 変にフェードアウトの機能をつけると、次のBGMが流れない事があるので、いったん無効化
+            // this.audioController.fadeOutBGM();
         } else {
             this.audioController.playBGM(id);
         }
